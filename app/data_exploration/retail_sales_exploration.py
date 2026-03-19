@@ -1,58 +1,43 @@
 """
-1. Check for dublicated transection id -> Треба написати функцію яка бере дані за найпершим order_date 
-2. Chek for record where ship_date < order_date -> Продумай логіку 
-3. Maybe clean customer_id CUST*** -> *** and if dome record start not from CUST -> ВСЕ ЧЕТКО
-4. Check for diffrents gender records .groupBy(gender, count()) -> ПРИВЕСТИ В 1 ФОРМАТ
-5. CHECK IF ANY RECORD STARTS NOT WITH PROD -> ВСЕ ЧЕТКО
-6. Check for diff types of product_category -> ВСЕ ЧЕТКО
-7. Check if quantity parametr is > 0 -> Є значення <= 0 
-8. Check for unvalid unit_price -> Обдумай обробку 
-9. Check if discount_pct < 100 anf for invalid records  -> Є значенння більші 100 і менше 0
-10. Also dicide what to fo with null values 
-11. Customer age <= 0 | age > 110
+DATA QUALITY & EDA CHECKLIST
+----------------------------
+01. Duplicate IDs    : Keep only the record with the earliest 'order_date'.
+02. Date Logic       : Identify records where 'ship_date' < 'order_date'.
+03. Gender Format    : Standardize gender values into a single format.
+04. Category Check   : Audit unique product categories.
+05. Quantity Check   : Flag records where quantity <= 0.
+06. Price Check      : Handle invalid or null unit prices.
+07. Discount Check   : Flag discounts outside the 0-100% range.
+08. Null Handling    : Define strategy for missing values (Impute/Drop).
+09. Age Validation   : Flag age anomalies (Age <= 0 or > 110).
 """
 
-#1. check for duplicate tr_id 
-bronze_df_duplicated_records = (
-    bronze_df.groupBy("transaction_id")
-    .agg(F.count("transaction_id").alias("amount_of_records"))
-    .filter(F.col("amount_of_records") > 1)
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+# --- 1. Remove Duplicates (Keep earliest order_date) ---
+window_spec = Window.partitionBy("transaction_id").orderBy("order_date")
+
+bronze_df_unique = (
+    bronze_df.withColumn("row_num", F.row_number().over(window_spec))
+    .filter(F.col("row_num") == 1)
+    .drop("row_num")
 )
 
-#2. Chek for record where ship_date < order_date 
-bronze_df_date_unmatched = (
-    bronze_df.filter(
-        F.col("order_date") > F.col("ship_date")
- )
+df_date_errors = bronze_df.filter(F.col("order_date") > F.col("ship_date"))
+
+df_gender_audit = bronze_df.groupBy("gender").count()
+
+df_quantity_errors = bronze_df.filter(F.col("quantity") <= 0)
+
+df_discount_errors = bronze_df.filter(
+    (F.col("discount_pct") > 100) | (F.col("discount_pct") < 0)
 )
 
-#4. Gender exploration 
-bronze_df_gender = (
-    bronze_df.groupBy("gender")
-    .count().alias("amount")
+df_age_errors = bronze_df.filter(
+    (F.col("age") <= 0) | (F.col("age") > 110)
 )
 
-#6. Check for diff types of product_category
-bronze_df_prd_ctg = (
-    bronze_df.groupBy("product_category")
-    .count().alias("amount")
-)
-
-#7. Check if quantity parametr is > 0 
-bronze_df_quantity = (
-    bronze_df.filter(F.col("quantity") <= 0)
-)
-
-#9. Check if discount_pct < 100 anf for invalid records 
-bronze_df_discount_pct = (
-        bronze_df.filter(
-        (F.col("discount_pct") >= 100) | (F.col("discount_pct") < 0)
-    )
-)
-
-"""
-1. customer_age
-2. gender
-3. discount_pct
-4. order_status
-"""
+print(f"Date Errors: {df_date_errors.count()}")
+print(f"Quantity Errors: {df_quantity_errors.count()}")
+print(f"Discount Errors: {df_discount_errors.count()}")
