@@ -36,7 +36,6 @@ The final stage of the pipeline transforms the **Gold Layer** (aggregated busine
 5. **Order Volume Trend (Line Chart):** A temporal analysis demonstrating the growth and seasonality of order counts on a yearly basis.
 
 ---
-### 🖼️ Dashboard Preview
 ![Power BI Sales Analytics](assets/powerbi_dashboard.png)
 ## 📂 Project Structure
 ```bash
