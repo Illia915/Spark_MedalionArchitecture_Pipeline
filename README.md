@@ -24,6 +24,20 @@ The pipeline automates the data lifecycle from raw data generation to final busi
 * **Analytics & Visualization:** Power BI
 * **Orchestration & Control:** PowerShell Scripts
 
+## 📊 Power BI Analytics & Visualization
+
+The final stage of the pipeline transforms the **Gold Layer** (aggregated business-ready data) into an interactive analytical dashboard. This allows for real-time monitoring of sales efficiency and geographical distribution.
+
+### 🔍 Key Metrics & Insights:
+1. **Total Orders:** A high-level KPI showing the total volume of processed transactions across all regions.
+2. **Total Revenue:** Cumulative earnings aggregated from all product categories.
+3. **Average Order Value (AOV):** A crucial business metric showing the mean revenue generated per single order.
+4. **Revenue by Category (Dynamic Bar Chart):** A visualization of income distribution where colors change dynamically (Conditional Formatting) based on performance thresholds to highlight top-performing vs. underperforming categories.
+5. **Order Volume Trend (Line Chart):** A temporal analysis demonstrating the growth and seasonality of order counts on a yearly basis.
+
+---
+### 🖼️ Dashboard Preview
+![Power BI Sales Analytics](assets/powerbi_dashboard.png)
 ## 📂 Project Structure
 ```bash
 .
